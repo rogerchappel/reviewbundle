@@ -26,7 +26,7 @@ export async function collectGitSnapshot(repoPath: string, mode: BundleMode, bas
   ]);
 
   if (mode === "branch") {
-    const mergeBase = await gitOutput(root, ["merge-base", base, "HEAD"]);
+    const mergeBase = (await gitOutput(root, ["merge-base", base, "HEAD"])).trim();
     const range = mergeBase + "...HEAD";
     const [diff, names] = await Promise.all([
       gitOutput(root, ["diff", "--binary", range]),
