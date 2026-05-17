@@ -19,7 +19,7 @@ printf 'export const smoke = true;\n' > src/smoke.js
 
 cd "$repo_root"
 npm run build >/dev/null
-node dist/cli.js "$fixture_repo" --output "$bundle_dir" --json >/tmp/reviewbundle-smoke.json
+node dist/src/cli.js "$fixture_repo" --output "$bundle_dir" --json >/tmp/reviewbundle-smoke.json
 
 test -f "$bundle_dir/manifest.json"
 test -f "$bundle_dir/summary.md"

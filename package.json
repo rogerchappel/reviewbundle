@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "description": "Package git changes into deterministic local review bundles with conservative redaction safeguards.",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "bin": {
-    "reviewbundle": "./dist/cli.js"
+    "reviewbundle": "./dist/src/cli.js"
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
     }
   },
   "files": [
