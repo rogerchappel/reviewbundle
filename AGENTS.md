@@ -5,10 +5,10 @@ This file defines how AI agents and human maintainers should work in `reviewbund
 ## Project Context
 
 - Project: `reviewbundle`
-- Repository: ``
-- Primary maintainer: ``
-- Default branch: ``
-- Package manager: ``
+- Repository: `https://github.com/rogerchappel/reviewbundle`
+- Primary maintainer: `Roger Chappel`
+- Default branch: `main`
+- Package manager: `npm`
 - Primary verification command: `bash scripts/validate.sh`
 
 ## Core Principle
@@ -173,4 +173,4 @@ Never commit secrets. Never mutate production data unless explicitly instructed.
 
 ## Repository-Specific Notes
 
-
+ReviewBundle is a local-first CLI. Treat redaction behavior, path handling, and output overwrite behavior as security-sensitive. Add focused tests for any change in those areas.
