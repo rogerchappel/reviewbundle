@@ -2,6 +2,14 @@
   "name": "reviewbundle",
   "version": "0.1.0",
   "description": "Package git changes into deterministic local review bundles with conservative redaction safeguards.",
+  "homepage": "https://github.com/rogerchappel/reviewbundle#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/reviewbundle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/reviewbundle/issues"
+  },
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
