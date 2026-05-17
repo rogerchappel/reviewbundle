@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ReviewBundleError } from "./errors.js";
@@ -32,6 +32,8 @@ export async function createBundle(options: CliOptions): Promise<BundleResult> {
   const outputDir = path.resolve(options.outputDir);
   if (options.force) {
     await rm(outputDir, { recursive: true, force: true });
+  } else if (await pathExists(outputDir)) {
+    throw new ReviewBundleError("Output directory already exists. Use --force to replace it: " + outputDir);
   }
   await mkdir(outputDir, { recursive: false });
   await mkdir(path.join(outputDir, "changed-files"), { recursive: true });
@@ -52,6 +54,15 @@ export async function createBundle(options: CliOptions): Promise<BundleResult> {
     warnings: redactions.filter((finding) => finding.severity === "warn"),
     manifest
   };
+}
+
+async function pathExists(filePath: string): Promise<boolean> {
+  try {
+    await access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function writeSnapshots(
