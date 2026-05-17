@@ -1,6 +1,6 @@
 # ReviewBundle PRD
 
-Status: in-progress
+Status: MVP implemented
 
 ## Summary
 
@@ -18,11 +18,17 @@ When work spans many files, reviewers need more than a raw diff but less than a 
 
 ## V1
 
-- Read git status and diff for staged, unstaged, or branch-vs-base changes.
+- Read git status and diff for staged, unstaged, all, or branch-vs-base changes.
 - Create a deterministic bundle directory with summary.md, diff.patch, changed-files/, manifest.json, and redaction report.
 - Denylist secret-looking paths and large generated folders by default.
 - Support JSON output and --check mode.
 - Include fixtures, tests, and a CLI smoke that builds a bundle from a sample repo.
+
+## V1 Gaps
+
+- Content-level secret scanning is not implemented yet.
+- Archive output is not implemented yet.
+- Binary file classification is intentionally minimal.
 
 ## Non-goals
 
