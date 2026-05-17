@@ -1,0 +1,13 @@
+{
+  "name": "reviewbundle",
+  "purpose": "Package local git changes for deterministic review handoffs.",
+  "inputs": ["git working tree", "staged changes", "branch comparison"],
+  "outputs": ["summary.md", "diff.patch", "changed-files/", "manifest.json", "redaction-report.json"],
+  "safety": {
+    "localOnly": true,
+    "blocksSecretPathsByDefault": true,
+    "refusesGeneratedDirectories": true,
+    "requiresExplicitOverwrite": true
+  },
+  "verification": ["npm test", "npm run check", "npm run build", "npm run smoke", "bash scripts/validate.sh"]
+}
