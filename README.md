@@ -44,6 +44,15 @@ Compare a branch against `main`:
 reviewbundle --mode branch --base main --output ./reviewbundle-output
 ```
 
+Run a disposable end-to-end demo from this checkout:
+
+```sh
+bash examples/basic-review-demo.sh
+```
+
+For the walkthrough, see
+[docs/tutorials/basic-review-bundle.md](docs/tutorials/basic-review-bundle.md).
+
 ## Output
 
 - `summary.md`: review-friendly overview.
