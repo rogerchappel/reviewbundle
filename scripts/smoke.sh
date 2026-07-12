@@ -19,6 +19,10 @@ printf 'export const smoke = true;\n' > src/smoke.js
 
 cd "$repo_root"
 npm run build >/dev/null
+node dist/src/cli.js --help >/tmp/reviewbundle-help.txt
+node dist/src/cli.js --version >/tmp/reviewbundle-version.txt
+grep -q "Usage: reviewbundle" /tmp/reviewbundle-help.txt
+node -e "const fs=require('node:fs'); const pkg=require('./package.json'); if (fs.readFileSync('/tmp/reviewbundle-version.txt','utf8').trim() !== pkg.version) process.exit(1)"
 node dist/src/cli.js "$fixture_repo" --output "$bundle_dir" --json >/tmp/reviewbundle-smoke.json
 
 test -f "$bundle_dir/manifest.json"

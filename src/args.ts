@@ -64,6 +64,7 @@ export function helpText(): string {
     "      --check                 Report findings without writing a bundle",
     "      --force                 Replace output directory if it already exists",
     "      --json                  Print machine-readable result",
+    "      --version               Show package version",
     "  -h, --help                  Show help"
   ].join("\n");
 }
