@@ -1,12 +1,32 @@
 #!/usr/bin/env node
+import { readFile } from "node:fs/promises";
 import { createBundle } from "./bundle.js";
 import { ReviewBundleError } from "./errors.js";
 import { stableJson } from "./json.js";
 import { parseArgs } from "./args.js";
 
+async function packageVersion(): Promise<string> {
+  for (const url of [
+    new URL("../../package.json", import.meta.url),
+    new URL("../package.json", import.meta.url)
+  ]) {
+    try {
+      const packageJson = JSON.parse(await readFile(url, "utf8")) as { version?: string };
+      return packageJson.version ?? "0.0.0";
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+  }
+  return "0.0.0";
+}
+
 export async function main(argv = process.argv.slice(2)): Promise<number> {
   let json = false;
   try {
+    if (argv.includes("--version")) {
+      process.stdout.write(`${await packageVersion()}\n`);
+      return 0;
+    }
     const options = parseArgs(argv);
     json = options.json;
     const result = await createBundle(options);
@@ -23,6 +43,8 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
     const message = error instanceof Error ? error.message : String(error);
     if (json) {
       process.stdout.write(stableJson({ error: message, exitCode }));
+    } else if (exitCode === 0) {
+      process.stdout.write(message + "\n");
     } else {
       process.stderr.write(message + "\n");
     }
