@@ -8,6 +8,19 @@ export interface ExecResult {
 }
 
 export async function execFile(command: string, args: string[], cwd: string): Promise<ExecResult> {
+  const result = await execFileBuffer(command, args, cwd);
+  return {
+    stdout: result.stdout.toString("utf8"),
+    stderr: result.stderr.toString("utf8")
+  };
+}
+
+export interface ExecBufferResult {
+  stdout: Buffer;
+  stderr: Buffer;
+}
+
+export async function execFileBuffer(command: string, args: string[], cwd: string): Promise<ExecBufferResult> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
@@ -23,8 +36,8 @@ export async function execFile(command: string, args: string[], cwd: string): Pr
     child.on("error", reject);
     child.on("close", (code) => {
       const result = {
-        stdout: Buffer.concat(stdout).toString("utf8"),
-        stderr: Buffer.concat(stderr).toString("utf8")
+        stdout: Buffer.concat(stdout),
+        stderr: Buffer.concat(stderr)
       };
 
       if (code === 0) {
@@ -32,7 +45,7 @@ export async function execFile(command: string, args: string[], cwd: string): Pr
         return;
       }
 
-      const message = result.stderr.trim() || "exit " + String(code);
+      const message = result.stderr.toString("utf8").trim() || "exit " + String(code);
       reject(new ReviewBundleError(command + " " + args.join(" ") + " failed: " + message));
     });
   });

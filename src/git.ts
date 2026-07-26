@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import { ReviewBundleError } from "./errors.js";
-import { execFile } from "./exec.js";
+import { execFile, execFileBuffer } from "./exec.js";
 import type { BundleMode, ChangedFile, ChangeKind } from "./types.js";
 
 export interface GitSnapshot {
@@ -43,6 +43,13 @@ export async function collectGitSnapshot(repoPath: string, mode: BundleMode, bas
 
   const files = filterStatusForMode(parsePorcelainStatus(status), mode);
   return { root, branch: branch.trim(), head: head.trim(), diff, files };
+}
+
+export async function readIndexFile(root: string, filePath: string): Promise<Buffer | undefined> {
+  const entry = await gitOutput(root, ["ls-files", "--stage", "-z", "--", filePath]);
+  const mode = entry.slice(0, entry.indexOf(" "));
+  if (!mode.startsWith("100")) return undefined;
+  return (await execFileBuffer("git", ["show", ":" + filePath], root)).stdout;
 }
 
 async function gitOutput(root: string, args: string[]): Promise<string> {

@@ -2,7 +2,7 @@ import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ReviewBundleError } from "./errors.js";
-import { collectGitSnapshot } from "./git.js";
+import { collectGitSnapshot, readIndexFile } from "./git.js";
 import { stableJson } from "./json.js";
 import { createManifest } from "./manifest.js";
 import { resolveInside, snapshotPathFor } from "./path-utils.js";
@@ -38,7 +38,7 @@ export async function createBundle(options: CliOptions): Promise<BundleResult> {
   await mkdir(outputDir, { recursive: false });
   await mkdir(path.join(outputDir, "changed-files"), { recursive: true });
 
-  const files = await writeSnapshots(snapshot.root, outputDir, snapshot.files, redactions, options.maxFileBytes);
+  const files = await writeSnapshots(snapshot.root, outputDir, snapshot.files, redactions, options.maxFileBytes, options.mode);
   const manifest = createManifest(snapshot, options, redactions, files);
 
   await writeFile(path.join(outputDir, "diff.patch"), snapshot.diff, "utf8");
@@ -70,7 +70,8 @@ async function writeSnapshots(
   outputDir: string,
   changedFiles: BundleManifest["files"],
   redactions: ReturnType<typeof scanPaths>,
-  maxFileBytes: number
+  maxFileBytes: number,
+  mode: CliOptions["mode"]
 ): Promise<BundleManifest["files"]> {
   const files: BundleManifest["files"] = [];
 
@@ -85,14 +86,13 @@ async function writeSnapshots(
       continue;
     }
 
-    const source = resolveInside(repoRoot, file.path);
-    const sourceStat = await stat(source);
-    if (!sourceStat.isFile()) {
+    const contents = mode === "staged" ? await readIndexFile(repoRoot, file.path) : await readWorkingTreeFile(repoRoot, file.path);
+    if (!contents) {
       files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, omitted: "not-a-file" });
       continue;
     }
 
-    if (sourceStat.size > maxFileBytes) {
+    if (contents.byteLength > maxFileBytes) {
       files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, omitted: "larger-than-max-file-bytes" });
       continue;
     }
@@ -100,9 +100,15 @@ async function writeSnapshots(
     const relativeSnapshot = snapshotPathFor(file.path);
     const target = path.join(outputDir, relativeSnapshot);
     await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(target, await readFile(source));
+    await writeFile(target, contents);
     files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, snapshot: relativeSnapshot.replace(/\\/g, "/") });
   }
 
   return files;
+}
+
+async function readWorkingTreeFile(repoRoot: string, filePath: string): Promise<Buffer | undefined> {
+  const source = resolveInside(repoRoot, filePath);
+  const sourceStat = await stat(source);
+  return sourceStat.isFile() ? readFile(source) : undefined;
 }
