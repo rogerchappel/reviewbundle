@@ -38,6 +38,10 @@ Bundle only staged changes:
 reviewbundle --mode staged --output ./reviewbundle-output --force
 ```
 
+Staged mode reads snapshots from Git's index. Unstaged edits or deletions made
+after `git add` are therefore excluded from both `diff.patch` and
+`changed-files/`.
+
 Compare a branch against `main`:
 
 ```sh
@@ -57,7 +61,8 @@ For the walkthrough, see
 
 - `summary.md`: review-friendly overview.
 - `diff.patch`: tracked git diff.
-- `changed-files/`: included working-tree snapshots.
+- `changed-files/`: included file snapshots (index snapshots in staged mode,
+  working-tree snapshots in other modes).
 - `manifest.json`: deterministic metadata for tools.
 - `redaction-report.json`: safety findings.
 

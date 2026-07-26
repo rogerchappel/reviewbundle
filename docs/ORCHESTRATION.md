@@ -13,7 +13,8 @@ ReviewBundle is designed for local-first agent handoffs. A worker can run it ins
 
 - `summary.md`: human-readable overview.
 - `diff.patch`: git patch for tracked changes.
-- `changed-files/`: working-tree snapshots for included files.
+- `changed-files/`: file snapshots for included paths. In staged mode these
+  come from Git's index, keeping later working-tree edits out of the handoff.
 - `manifest.json`: deterministic machine-readable metadata.
 - `redaction-report.json`: blocked or warning findings.
 
