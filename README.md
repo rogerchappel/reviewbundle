@@ -85,13 +85,16 @@ bash scripts/validate.sh
 ```
 
 `npm run release:check` runs the TypeScript check, compiled test suite, fixture
-smoke, and npm pack dry-run used to confirm the release-candidate surface.
+smoke, and packed-artifact verification used to confirm the release-candidate
+surface.
 
 ## Package Contents
 
 The npm package includes the compiled CLI, README, docs, license, changelog,
 contributing guide, and security policy. Run `npm run package:smoke` to inspect
-the exact tarball before publishing.
+the exact tarball before publishing. The command builds from source, confirms
+every declared package entrypoint is present, installs the tarball in a clean
+temporary project, imports the package, and runs the installed CLI.
 
 ## License
 
