@@ -34,10 +34,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run build",
     "pretest": "npm run build",
     "test": "node --test dist/**/*.test.js",
     "smoke": "bash scripts/smoke.sh",
-    "package:smoke": "npm pack --dry-run",
+    "package:smoke": "node scripts/package-smoke.mjs",
     "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
   "keywords": [
