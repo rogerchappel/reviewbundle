@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createBundle } from "./bundle.js";
 import { ReviewBundleError } from "./errors.js";
 import { stableJson } from "./json.js";
@@ -52,6 +54,9 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   }
 }
 
-if (import.meta.url === "file://" + process.argv[1]) {
+if (
+  process.argv[1] &&
+  realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))
+) {
   process.exitCode = await main();
 }
