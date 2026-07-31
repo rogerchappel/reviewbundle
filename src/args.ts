@@ -59,7 +59,7 @@ export function helpText(): string {
     "  -o, --output <dir>          Bundle output directory",
     "      --mode <mode>           all, staged, unstaged, or branch",
     "      --base <ref>            Base ref for --mode branch (default: main)",
-    "      --max-file-bytes <n>    Omit snapshots larger than n bytes",
+    "      --max-file-bytes <n>    Omit snapshots larger than positive integer n bytes",
     "      --allow-secret-paths    Include secret-looking paths",
     "      --check                 Report findings without writing a bundle",
     "      --force                 Replace output directory if it already exists",
@@ -77,9 +77,12 @@ function parseMode(value: string): BundleMode {
 }
 
 function parsePositiveInt(value: string, option: string): number {
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
+  if (!/^[1-9]\d*$/.test(value)) {
     throw new ReviewBundleError(option + " must be a positive integer.");
+  }
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) {
+    throw new ReviewBundleError(option + " must be a positive integer no larger than " + Number.MAX_SAFE_INTEGER + ".");
   }
   return parsed;
 }
