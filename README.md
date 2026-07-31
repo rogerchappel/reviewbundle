@@ -42,6 +42,18 @@ Staged mode reads snapshots from Git's index. Unstaged edits or deletions made
 after `git add` are therefore excluded from both `diff.patch` and
 `changed-files/`.
 
+Other modes snapshot the working tree. If a path represented in Git's combined
+state is absent there (for example, a staged addition later deleted locally),
+the manifest records it as `omitted: "not-a-file"` instead of failing.
+
+Limit individual snapshots with a canonical positive integer byte count:
+
+```sh
+reviewbundle --max-file-bytes 1048576 --output ./reviewbundle-output
+```
+
+Values with signs, decimals, suffixes, leading zeroes, or zero are rejected.
+
 Compare a branch against `main`:
 
 ```sh
