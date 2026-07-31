@@ -63,6 +63,36 @@ test("staged bundles retain indexed additions deleted only from the working tree
   });
 });
 
+test("all-mode bundles omit indexed additions deleted from the working tree", async () => {
+  const repo = await makeFixtureRepo();
+  const changedPath = path.join(repo, "staged-then-deleted.txt");
+  await writeFile(changedPath, "indexed content\n");
+  await execFile("git", ["add", "staged-then-deleted.txt"], repo);
+  await rm(changedPath);
+
+  const outputDir = path.join(os.tmpdir(), "reviewbundle-all-deleted-" + Date.now());
+  const result = await createBundle({ ...bundleOptions(repo, outputDir), mode: "all" });
+
+  assert.equal(result.filesIncluded, 0);
+  assert.equal(result.filesOmitted, 1);
+  assert.deepEqual(result.manifest?.files[0], {
+    path: "staged-then-deleted.txt",
+    oldPath: undefined,
+    status: "AD",
+    kind: "added",
+    omitted: "not-a-file"
+  });
+  assert.deepEqual(
+    JSON.parse(await readFile(path.join(outputDir, "manifest.json"), "utf8")).files,
+    [{
+      path: "staged-then-deleted.txt",
+      status: "AD",
+      kind: "added",
+      omitted: "not-a-file"
+    }]
+  );
+});
+
 function bundleOptions(repoPath: string, outputDir: string) {
   return {
     repoPath,

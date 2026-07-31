@@ -109,6 +109,15 @@ async function writeSnapshots(
 
 async function readWorkingTreeFile(repoRoot: string, filePath: string): Promise<Buffer | undefined> {
   const source = resolveInside(repoRoot, filePath);
-  const sourceStat = await stat(source);
-  return sourceStat.isFile() ? readFile(source) : undefined;
+  try {
+    const sourceStat = await stat(source);
+    return sourceStat.isFile() ? readFile(source) : undefined;
+  } catch (error) {
+    if (isMissingFileError(error)) return undefined;
+    throw error;
+  }
+}
+
+function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && "code" in error && error.code === "ENOENT";
 }
