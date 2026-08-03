@@ -6,11 +6,19 @@ Small tool. Sharp edges sanded down. No cloud account required.
 
 ## Install
 
+ReviewBundle is not currently published to the npm registry. Build and install
+the release artifact from a source checkout:
+
 ```sh
-npm install -g reviewbundle
+git clone https://github.com/rogerchappel/reviewbundle.git
+cd reviewbundle
+npm ci
+npm pack
+npm install --global ./reviewbundle-*.tgz
+reviewbundle --help
 ```
 
-From source:
+To run it from the checkout without installing globally:
 
 ```sh
 npm install
@@ -91,14 +99,15 @@ npm run check
 npm test
 npm run build
 npm run smoke
+npm run install:smoke
 npm run package:smoke
 npm run release:check
 bash scripts/validate.sh
 ```
 
 `npm run release:check` runs the TypeScript check, compiled test suite, fixture
-smoke, and packed-artifact verification used to confirm the release-candidate
-surface.
+smoke, clean global-install smoke, and packed-artifact verification used to
+confirm the release-candidate surface.
 
 ## Package Contents
 
@@ -107,6 +116,9 @@ contributing guide, and security policy. Run `npm run package:smoke` to inspect
 the exact tarball before publishing. The command builds from source, confirms
 every declared package entrypoint is present, installs the tarball in a clean
 temporary project, imports the package, and runs the installed CLI.
+
+Run `npm run install:smoke` to verify the documented global installation path
+in an isolated temporary npm prefix.
 
 ## License
 
