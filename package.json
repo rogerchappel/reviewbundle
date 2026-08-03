@@ -38,8 +38,9 @@
     "pretest": "npm run build",
     "test": "node --test dist/**/*.test.js",
     "smoke": "bash scripts/smoke.sh",
+    "install:smoke": "node scripts/install-smoke.mjs",
     "package:smoke": "node scripts/package-smoke.mjs",
-    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
+    "release:check": "npm run check && npm test && npm run smoke && npm run install:smoke && npm run package:smoke"
   },
   "keywords": [
     "cli",
