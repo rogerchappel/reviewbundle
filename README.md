@@ -82,8 +82,10 @@ For the walkthrough, see
 - `summary.md`: review-friendly overview.
 - `diff.patch`: tracked git diff.
 - `changed-files/`: included file snapshots (index snapshots in staged mode,
-  working-tree snapshots in other modes).
-- `manifest.json`: deterministic metadata for tools.
+  working-tree snapshots in other modes). Renames are stored under their new
+  path.
+- `manifest.json`: deterministic metadata for tools. Rename entries use `path`
+  for the destination and `oldPath` for the source.
 - `redaction-report.json`: safety findings.
 
 ## Safety

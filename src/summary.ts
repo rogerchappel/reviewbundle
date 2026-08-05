@@ -18,7 +18,9 @@ export function renderSummary(manifest: BundleManifest): string {
     "",
     "## Changed Files",
     "",
-    ...manifest.files.map((file) => "- " + file.path + " (" + file.kind + (file.omitted ? ", omitted: " + file.omitted : "") + ")"),
+    ...manifest.files.map((file) =>
+      "- " + (file.oldPath ? file.oldPath + " -> " : "") + file.path + " (" + file.kind + (file.omitted ? ", omitted: " + file.omitted : "") + ")"
+    ),
     "",
     "## Safety",
     "",

@@ -19,3 +19,16 @@ test("branch mode compares HEAD against the base ref", async () => {
   assert.equal(snapshot.base, "main");
   assert.match(snapshot.diff, /branch change/);
 });
+
+test("branch mode keeps name-status rename paths in source-to-destination order", async () => {
+  const repo = await makeFixtureRepo();
+  await execFile("git", ["checkout", "-b", "feature"], repo);
+  await execFile("git", ["mv", "src/app.js", "src/renamed.js"], repo);
+  await execFile("git", ["commit", "-m", "rename app"], repo);
+
+  const snapshot = await collectGitSnapshot(repo, "branch", "main");
+  assert.equal(snapshot.files[0]?.path, "src/renamed.js");
+  assert.equal(snapshot.files[0]?.oldPath, "src/app.js");
+  assert.equal(snapshot.files[0]?.status, "R100");
+  assert.equal(snapshot.files[0]?.kind, "renamed");
+});
