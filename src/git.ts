@@ -79,8 +79,8 @@ function parsePorcelainStatus(raw: string): ChangedFile[] {
     const y = entry[1] ?? " ";
     const rest = entry.slice(3);
     const renamed = x === "R" || y === "R" || x === "C" || y === "C";
-    const oldPath = renamed ? rest : undefined;
-    const filePath = renamed ? entries[++index] : rest;
+    const filePath = rest;
+    const oldPath = renamed ? entries[++index] : undefined;
     files.push(toChangedFile(filePath ?? "", x + y, oldPath));
   }
 
