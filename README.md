@@ -62,7 +62,9 @@ reviewbundle --max-file-bytes 1048576 --output ./reviewbundle-output
 
 Values with signs, decimals, suffixes, leading zeroes, or zero are rejected.
 
-Compare a branch against `main`:
+Compare the committed `HEAD` of a branch against `main`. Branch mode reads
+changed-file snapshots from `HEAD`, so staged or unstaged local edits do not
+make them disagree with the committed comparison in `diff.patch`:
 
 ```sh
 reviewbundle --mode branch --base main --output ./reviewbundle-output
@@ -81,9 +83,9 @@ For the walkthrough, see
 
 - `summary.md`: review-friendly overview.
 - `diff.patch`: tracked git diff.
-- `changed-files/`: included file snapshots (index snapshots in staged mode,
-  working-tree snapshots in other modes). Renames are stored under their new
-  path.
+- `changed-files/`: included file snapshots (committed `HEAD` snapshots in
+  branch mode, index snapshots in staged mode, and working-tree snapshots in
+  other modes). Renames are stored under their new path.
 - `manifest.json`: deterministic metadata for tools. Rename entries use `path`
   for the destination and `oldPath` for the source.
 - `redaction-report.json`: safety findings.

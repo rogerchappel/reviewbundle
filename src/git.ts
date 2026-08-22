@@ -52,6 +52,13 @@ export async function readIndexFile(root: string, filePath: string): Promise<Buf
   return (await execFileBuffer("git", ["show", ":" + filePath], root)).stdout;
 }
 
+export async function readHeadFile(root: string, filePath: string): Promise<Buffer | undefined> {
+  const entry = await gitOutput(root, ["ls-tree", "-z", "HEAD", "--", filePath]);
+  const mode = entry.slice(0, entry.indexOf(" "));
+  if (!mode.startsWith("100")) return undefined;
+  return (await execFileBuffer("git", ["show", "HEAD:" + filePath], root)).stdout;
+}
+
 async function gitOutput(root: string, args: string[]): Promise<string> {
   try {
     return (await execFile("git", args, root)).stdout;

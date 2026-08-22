@@ -2,7 +2,7 @@ import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ReviewBundleError } from "./errors.js";
-import { collectGitSnapshot, readIndexFile } from "./git.js";
+import { collectGitSnapshot, readHeadFile, readIndexFile } from "./git.js";
 import { stableJson } from "./json.js";
 import { createManifest } from "./manifest.js";
 import { resolveInside, snapshotPathFor } from "./path-utils.js";
@@ -86,7 +86,12 @@ async function writeSnapshots(
       continue;
     }
 
-    const contents = mode === "staged" ? await readIndexFile(repoRoot, file.path) : await readWorkingTreeFile(repoRoot, file.path);
+    const contents =
+      mode === "staged"
+        ? await readIndexFile(repoRoot, file.path)
+        : mode === "branch"
+          ? await readHeadFile(repoRoot, file.path)
+          : await readWorkingTreeFile(repoRoot, file.path);
     if (!contents) {
       files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, omitted: "not-a-file" });
       continue;
