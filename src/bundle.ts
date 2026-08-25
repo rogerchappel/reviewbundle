@@ -2,7 +2,7 @@ import { access, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { ReviewBundleError } from "./errors.js";
-import { collectGitSnapshot, readHeadFile, readIndexFile } from "./git.js";
+import { collectGitSnapshot, readHeadFile, readIndexFile, resolveGitRoot } from "./git.js";
 import { stableJson } from "./json.js";
 import { createManifest } from "./manifest.js";
 import { resolveInside, snapshotPathFor } from "./path-utils.js";
@@ -11,7 +11,15 @@ import { renderSummary } from "./summary.js";
 import type { BundleManifest, BundleResult, CliOptions } from "./types.js";
 
 export async function createBundle(options: CliOptions): Promise<BundleResult> {
-  const snapshot = await collectGitSnapshot(options.repoPath, options.mode, options.base);
+  const outputDir = path.resolve(options.outputDir);
+  const repoRoot = await resolveGitRoot(options.repoPath);
+  const excludedOutput = path.relative(repoRoot, outputDir);
+  const snapshot = await collectGitSnapshot(
+    options.repoPath,
+    options.mode,
+    options.base,
+    excludedOutput && !excludedOutput.startsWith(".." + path.sep) && !path.isAbsolute(excludedOutput) ? outputDir : undefined
+  );
   const redactions = scanPaths(snapshot.files, options.allowSecretPaths);
   const blocked = redactions.filter((finding) => finding.severity === "block");
 
@@ -29,7 +37,6 @@ export async function createBundle(options: CliOptions): Promise<BundleResult> {
     throw new ReviewBundleError("Refusing to bundle blocked paths. Re-run with --check for details.");
   }
 
-  const outputDir = path.resolve(options.outputDir);
   if (options.force) {
     await rm(outputDir, { recursive: true, force: true });
   } else if (await pathExists(outputDir)) {

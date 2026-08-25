@@ -18,8 +18,9 @@ export async function resolveGitRoot(repoPath: string): Promise<string> {
   return path.resolve(repoPath, result.stdout.trim());
 }
 
-export async function collectGitSnapshot(repoPath: string, mode: BundleMode, base: string): Promise<GitSnapshot> {
+export async function collectGitSnapshot(repoPath: string, mode: BundleMode, base: string, excludedPath?: string): Promise<GitSnapshot> {
   const root = await resolveGitRoot(repoPath);
+  const pathspec = exclusionPathspec(root, excludedPath);
   const [branch, head] = await Promise.all([
     gitOutput(root, ["branch", "--show-current"]),
     gitOutput(root, ["rev-parse", "--verify", "HEAD"])
@@ -29,16 +30,16 @@ export async function collectGitSnapshot(repoPath: string, mode: BundleMode, bas
     const mergeBase = (await gitOutput(root, ["merge-base", base, "HEAD"])).trim();
     const range = mergeBase + "...HEAD";
     const [diff, names] = await Promise.all([
-      gitOutput(root, ["diff", "--binary", range]),
-      gitOutput(root, ["diff", "--name-status", "-z", range])
+      gitOutput(root, ["diff", "--binary", range, ...pathspec]),
+      gitOutput(root, ["diff", "--name-status", "-z", range, ...pathspec])
     ]);
     return { root, branch: branch.trim(), head: head.trim(), base, diff, files: parseNameStatus(names) };
   }
 
   const args = diffArgsForMode(mode);
   const [diff, status] = await Promise.all([
-    gitOutput(root, ["diff", "--binary", ...args]),
-    gitOutput(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"])
+    gitOutput(root, ["diff", "--binary", ...args, ...pathspec]),
+    gitOutput(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all", ...pathspec])
   ]);
 
   const files = filterStatusForMode(parsePorcelainStatus(status), mode);
@@ -46,6 +47,12 @@ export async function collectGitSnapshot(repoPath: string, mode: BundleMode, bas
     files.filter((file) => file.untracked).map((file) => untrackedFileDiff(root, file.path))
   );
   return { root, branch: branch.trim(), head: head.trim(), diff: joinDiffs(diff, untrackedDiffs), files };
+}
+
+function exclusionPathspec(root: string, excludedPath?: string): string[] {
+  if (!excludedPath) return [];
+  const relative = path.relative(root, path.resolve(excludedPath)).replace(/\\/g, "/");
+  return ["--", ".", `:(exclude)${relative}`, `:(exclude)${relative}/**`];
 }
 
 export async function readIndexFile(root: string, filePath: string): Promise<Buffer | undefined> {
