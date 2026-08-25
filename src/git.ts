@@ -42,7 +42,10 @@ export async function collectGitSnapshot(repoPath: string, mode: BundleMode, bas
   ]);
 
   const files = filterStatusForMode(parsePorcelainStatus(status), mode);
-  return { root, branch: branch.trim(), head: head.trim(), diff, files };
+  const untrackedDiffs = await Promise.all(
+    files.filter((file) => file.untracked).map((file) => untrackedFileDiff(root, file.path))
+  );
+  return { root, branch: branch.trim(), head: head.trim(), diff: joinDiffs(diff, untrackedDiffs), files };
 }
 
 export async function readIndexFile(root: string, filePath: string): Promise<Buffer | undefined> {
@@ -68,6 +71,22 @@ async function gitOutput(root: string, args: string[]): Promise<string> {
     }
     throw new ReviewBundleError(error instanceof Error ? error.message : String(error));
   }
+}
+
+async function untrackedFileDiff(root: string, filePath: string): Promise<string> {
+  try {
+    return (await execFile("git", ["diff", "--binary", "--no-index", "--", "/dev/null", filePath], root, [0, 1])).stdout;
+  } catch (error) {
+    if (error instanceof ReviewBundleError) throw error;
+    throw new ReviewBundleError(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function joinDiffs(trackedDiff: string, untrackedDiffs: string[]): string {
+  return [trackedDiff, ...untrackedDiffs]
+    .filter(Boolean)
+    .map((diff) => diff.endsWith("\n") ? diff : diff + "\n")
+    .join("");
 }
 
 function diffArgsForMode(mode: BundleMode): string[] {

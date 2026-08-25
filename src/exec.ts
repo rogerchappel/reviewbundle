@@ -7,8 +7,8 @@ export interface ExecResult {
   stderr: string;
 }
 
-export async function execFile(command: string, args: string[], cwd: string): Promise<ExecResult> {
-  const result = await execFileBuffer(command, args, cwd);
+export async function execFile(command: string, args: string[], cwd: string, acceptedExitCodes: readonly number[] = [0]): Promise<ExecResult> {
+  const result = await execFileBuffer(command, args, cwd, acceptedExitCodes);
   return {
     stdout: result.stdout.toString("utf8"),
     stderr: result.stderr.toString("utf8")
@@ -20,7 +20,12 @@ export interface ExecBufferResult {
   stderr: Buffer;
 }
 
-export async function execFileBuffer(command: string, args: string[], cwd: string): Promise<ExecBufferResult> {
+export async function execFileBuffer(
+  command: string,
+  args: string[],
+  cwd: string,
+  acceptedExitCodes: readonly number[] = [0]
+): Promise<ExecBufferResult> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
@@ -40,7 +45,7 @@ export async function execFileBuffer(command: string, args: string[], cwd: strin
         stderr: Buffer.concat(stderr)
       };
 
-      if (code === 0) {
+      if (code !== null && acceptedExitCodes.includes(code)) {
         resolve(result);
         return;
       }
