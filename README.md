@@ -99,6 +99,11 @@ For the walkthrough, see
 
 ReviewBundle refuses secret-looking paths such as `.env.local`, private keys, `secrets/`, cloud credential folders, `.ssh/`, `.git/`, `node_modules/`, `dist/`, `build/`, and `coverage/`. It also refuses to overwrite an existing output directory unless `--force` is set.
 
+An output directory inside the target repository is excluded from change
+discovery and patch generation. Repeated `--force` runs never include artifacts
+from the previous or current bundle. Output directories outside the repository
+do not affect change discovery.
+
 Use `--allow-secret-paths` only for private local workflows where the reviewer is allowed to see those files. ReviewBundle is conservative, not clairvoyant: inspect the bundle before sharing it.
 
 ## Verify
