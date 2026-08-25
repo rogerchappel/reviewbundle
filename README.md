@@ -53,6 +53,9 @@ after `git add` are therefore excluded from both `diff.patch` and
 Other modes snapshot the working tree. If a path represented in Git's combined
 state is absent there (for example, a staged addition later deleted locally),
 the manifest records it as `omitted: "not-a-file"` instead of failing.
+In `all` and `unstaged` modes, untracked files are included as added-file
+patches in `diff.patch` and as working-tree snapshots, so the patch, manifest,
+summary, and `changed-files/` describe the same set of reviewable paths.
 
 Limit individual snapshots with a canonical positive integer byte count:
 
@@ -82,7 +85,9 @@ For the walkthrough, see
 ## Output
 
 - `summary.md`: review-friendly overview.
-- `diff.patch`: tracked git diff.
+- `diff.patch`: git diff, including added-file patches for untracked files in
+  `all` and `unstaged` modes. Staged and branch modes remain index- and
+  committed-branch-only respectively.
 - `changed-files/`: included file snapshots (committed `HEAD` snapshots in
   branch mode, index snapshots in staged mode, and working-tree snapshots in
   other modes). Renames are stored under their new path.
