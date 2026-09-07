@@ -56,6 +56,9 @@ the manifest records it as `omitted: "not-a-file"` instead of failing.
 In `all` and `unstaged` modes, untracked files are included as added-file
 patches in `diff.patch` and as working-tree snapshots, so the patch, manifest,
 summary, and `changed-files/` describe the same set of reviewable paths.
+On POSIX, literal backslashes in filenames are preserved in those artifacts.
+On Windows, Git's `/` separators are normalized for portable manifest paths;
+Windows does not permit a literal backslash within a filename.
 
 Limit individual snapshots with a canonical positive integer byte count:
 
