@@ -180,5 +180,5 @@ function sortFiles(files: ChangedFile[]): ChangedFile[] {
 }
 
 function normalizeGitPath(filePath: string): string {
-  return filePath.replace(/\\/g, "/");
+  return path.sep === "\\" ? filePath.replace(/\\/g, "/") : filePath;
 }

@@ -113,7 +113,8 @@ async function writeSnapshots(
     const target = path.join(outputDir, relativeSnapshot);
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, contents);
-    files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, snapshot: relativeSnapshot.replace(/\\/g, "/") });
+    const manifestSnapshot = path.sep === "\\" ? relativeSnapshot.replace(/\\/g, "/") : relativeSnapshot;
+    files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, snapshot: manifestSnapshot });
   }
 
   return files;
