@@ -65,3 +65,6 @@ jobs:
           npm ci
 
           npm run release:check
+
+      - name: Run repository validation
+        run: bash scripts/validate.sh
