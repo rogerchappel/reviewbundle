@@ -141,11 +141,17 @@ if [ -f "package.json" ]; then
   if package_manager="$(choose_package_manager)"; then
     note "using package manager: $package_manager"
 
-    for script_name in check lint test build release:check; do
-      if package_script_exists "$script_name"; then
-        run_check "package script: $script_name" run_package_script "$package_manager" "$script_name"
-      fi
-    done
+    # release:check is an aggregate validation script. Prefer it over the
+    # constituent checks so checks, tests and builds are not run twice.
+    if package_script_exists "release:check"; then
+      run_check "package script: release:check" run_package_script "$package_manager" "release:check"
+    else
+      for script_name in check lint test build; do
+        if package_script_exists "$script_name"; then
+          run_check "package script: $script_name" run_package_script "$package_manager" "$script_name"
+        fi
+      done
+    fi
   else
     fail "package.json exists but no supported package manager was found on PATH"
   fi
