@@ -100,7 +100,7 @@ For the walkthrough, see
 
 ## Safety
 
-ReviewBundle refuses secret-looking paths such as `.env.local`, private keys, `secrets/`, cloud credential folders, `.ssh/`, `.git/`, `node_modules/`, `dist/`, `build/`, and `coverage/`. It also refuses to overwrite an existing output directory unless `--force` is set.
+ReviewBundle refuses secret-looking paths such as `.env.local`, private keys, `secrets/`, cloud credential folders, `.ssh/`, `.git/`, `node_modules/`, `dist/`, `build/`, and `coverage/`. While writing snapshots, it also replaces high-confidence GitHub token (`ghp_`, `github_pat_`) and AWS access-key (`AKIA...`) patterns with `[REDACTED]`; the redaction report identifies the rule and file without including the matched value. It also refuses to overwrite an existing output directory unless `--force` is set.
 
 An output directory inside the target repository is excluded from change
 discovery and patch generation. Repeated `--force` runs never include artifacts
