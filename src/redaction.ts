@@ -14,6 +14,27 @@ const GENERATED_PATH_PATTERNS: Array<{ name: string; pattern: RegExp; message: s
   { name: "build-output", pattern: /(^|\/)(dist|build|coverage|\.next|\.turbo)(\/|$)/i, message: "Generated output directories are omitted." }
 ];
 
+const CONTENT_TOKEN_PATTERNS: Array<{ name: string; pattern: RegExp; message: string }> = [
+  { name: "github-token", pattern: /\bgh[pousr]_[A-Za-z0-9_]{30,255}\b/g, message: "GitHub token-like content is redacted." },
+  { name: "github-fine-grained-token", pattern: /\bgithub_pat_[A-Za-z0-9_]{40,255}\b/g, message: "GitHub token-like content is redacted." },
+  { name: "aws-access-key", pattern: /\bAKIA[0-9A-Z]{16}\b/g, message: "AWS access-key-like content is redacted." }
+];
+
+/** Return high-confidence credential-like spans without exposing matched values. */
+export function redactContent(content: string): { content: string; findings: Array<{ rule: string; message: string }> } {
+  const findings: Array<{ rule: string; message: string }> = [];
+  let redacted = content;
+  for (const rule of CONTENT_TOKEN_PATTERNS) {
+    rule.pattern.lastIndex = 0;
+    if (rule.pattern.test(redacted)) {
+      findings.push({ rule: rule.name, message: rule.message });
+      rule.pattern.lastIndex = 0;
+      redacted = redacted.replace(rule.pattern, "[REDACTED]");
+    }
+  }
+  return { content: redacted, findings };
+}
+
 export function scanPaths(files: ChangedFile[], allowSecretPaths: boolean): RedactionFinding[] {
   const findings: RedactionFinding[] = [];
 
