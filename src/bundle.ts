@@ -6,7 +6,7 @@ import { collectGitSnapshot, readHeadFile, readIndexFile, resolveGitRoot } from 
 import { stableJson } from "./json.js";
 import { createManifest } from "./manifest.js";
 import { resolveInside, snapshotPathFor } from "./path-utils.js";
-import { scanPaths, isBlockedPath } from "./redaction.js";
+import { scanPaths, isBlockedPath, redactContent } from "./redaction.js";
 import { renderSummary } from "./summary.js";
 import type { BundleManifest, BundleResult, CliOptions } from "./types.js";
 
@@ -112,7 +112,12 @@ async function writeSnapshots(
     const relativeSnapshot = snapshotPathFor(file.path);
     const target = path.join(outputDir, relativeSnapshot);
     await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(target, contents);
+    const text = contents.toString("utf8");
+    const redacted = redactContent(text);
+    for (const finding of redacted.findings) {
+      redactions.push({ path: file.path, rule: finding.rule, severity: "warn", message: finding.message });
+    }
+    await writeFile(target, redacted.findings.length > 0 ? redacted.content : contents);
     const manifestSnapshot = path.sep === "\\" ? relativeSnapshot.replace(/\\/g, "/") : relativeSnapshot;
     files.push({ path: file.path, oldPath: file.oldPath, status: file.status, kind: file.kind, snapshot: manifestSnapshot });
   }
