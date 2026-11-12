@@ -33,6 +33,16 @@ test("scanPaths allows secret paths only when explicitly requested", () => {
   assert.equal(scanPaths([file("secrets/api-token.txt")], true).length, 0);
 });
 
+test("scanPaths blocks env files at path boundaries without blocking similarly named files", () => {
+  const paths = ["config/.env", "config/.ENV.production", "config/.envrc", "config/env.local"];
+
+  const findings = scanPaths(paths.map(file), false);
+  assert.deepEqual(findings.map(({ path, rule }) => ({ path, rule })), [
+    { path: "config/.env", rule: "env-file" },
+    { path: "config/.ENV.production", rule: "env-file" }
+  ]);
+});
+
 test("redactContent removes high-confidence token formats but preserves ordinary text", async () => {
   const { redactContent } = await import("../src/redaction.js");
   const token = `ghp_${"A".repeat(36)}`;
