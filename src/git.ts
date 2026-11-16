@@ -51,7 +51,12 @@ export async function collectGitSnapshot(repoPath: string, mode: BundleMode, bas
 
 function exclusionPathspec(root: string, excludedPath?: string): string[] {
   if (!excludedPath) return [];
-  const relative = path.relative(root, path.resolve(excludedPath)).replace(/\\/g, "/");
+  const absolute = path.resolve(root, excludedPath);
+  const relativePath = path.relative(root, absolute);
+  if (relativePath === ".." || relativePath.startsWith(".." + path.sep) || path.isAbsolute(relativePath)) {
+    throw new ReviewBundleError("Excluded path must be inside the repository root");
+  }
+  const relative = relativePath.replace(/\\/g, "/");
   return ["--", ".", `:(exclude)${relative}`, `:(exclude)${relative}/**`];
 }
 

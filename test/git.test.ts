@@ -24,6 +24,23 @@ test("collectGitSnapshot limits unstaged mode to unstaged changes", async () => 
   assert.equal(snapshot.files.some((file) => file.untracked), true);
 });
 
+test("collectGitSnapshot rejects excluded paths outside the repository", async () => {
+  const repo = await makeFixtureRepo();
+  await assert.rejects(
+    collectGitSnapshot(repo, "all", "main", path.dirname(repo)),
+    /Excluded path must be inside the repository root/
+  );
+});
+
+test("collectGitSnapshot excludes an in-repository path", async () => {
+  const repo = await makeFixtureRepo();
+  await addWorkingTreeChange(repo);
+
+  const snapshot = await collectGitSnapshot(repo, "all", "main", path.join(repo, "src", "app.js"));
+  assert.deepEqual(snapshot.files.map((file) => file.path), ["src/new-file.js"]);
+  assert.doesNotMatch(snapshot.diff, /hello,/);
+});
+
 test("collectGitSnapshot preserves literal backslashes in POSIX paths", { skip: process.platform === "win32" }, async () => {
   const repo = await makeFixtureRepo();
   const trackedPath = "tracked\\name.txt";
