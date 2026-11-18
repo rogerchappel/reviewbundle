@@ -53,3 +53,10 @@ for (const outputName of ["reviewbundle-output", "custom/bundle"]) {
     assert.equal(result.filesOmitted, 0);
   });
 }
+
+test("resolveInside normalizes root spellings before checking containment", async () => {
+  const { resolveInside } = await import("../src/path-utils.js");
+  const root = path.join(os.tmpdir(), "reviewbundle-root");
+  assert.equal(resolveInside(path.join(root, "nested", ".."), "file.txt"), path.join(root, "file.txt"));
+  assert.throws(() => resolveInside(path.join(root, "nested", ".."), "../outside.txt"), ReviewBundleError);
+});
