@@ -3,9 +3,10 @@ import path from "node:path";
 import { ReviewBundleError } from "./errors.js";
 
 export function resolveInside(root: string, relativePath: string): string {
-  const resolved = path.resolve(root, relativePath);
-  const rootWithSep = root.endsWith(path.sep) ? root : root + path.sep;
-  if (resolved !== root && !resolved.startsWith(rootWithSep)) {
+  const canonicalRoot = path.resolve(root);
+  const resolved = path.resolve(canonicalRoot, relativePath);
+  const rootWithSep = canonicalRoot.endsWith(path.sep) ? canonicalRoot : canonicalRoot + path.sep;
+  if (resolved !== canonicalRoot && !resolved.startsWith(rootWithSep)) {
     throw new ReviewBundleError("Refusing path outside repository: " + relativePath);
   }
   return resolved;
