@@ -54,6 +54,14 @@ for (const outputName of ["reviewbundle-output", "custom/bundle"]) {
   });
 }
 
+test("snapshotPathFor sanitizes exact dot segments and preserves ordinary segments", async () => {
+  const { snapshotPathFor } = await import("../src/path-utils.js");
+
+  assert.equal(snapshotPathFor("src/../secret.txt"), path.join("changed-files", "src", "_", "secret.txt"));
+  assert.equal(snapshotPathFor("./src//file.txt"), path.join("changed-files", "_", "src", "_", "file.txt"));
+  assert.equal(snapshotPathFor("src/..hidden/file..txt"), path.join("changed-files", "src", "..hidden", "file..txt"));
+});
+
 test("resolveInside normalizes root spellings before checking containment", async () => {
   const { resolveInside } = await import("../src/path-utils.js");
   const root = path.join(os.tmpdir(), "reviewbundle-root");
