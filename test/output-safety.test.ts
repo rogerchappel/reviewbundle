@@ -62,6 +62,29 @@ test("snapshotPathFor sanitizes exact dot segments and preserves ordinary segmen
   assert.equal(snapshotPathFor("src/..hidden/file..txt"), path.join("changed-files", "src", "..hidden", "file..txt"));
 });
 
+test("createBundle keeps POSIX backslash dot-segment names contained", { skip: process.platform === "win32" }, async () => {
+  const repo = await makeFixtureRepo();
+  const gitPath = "..\\secret.txt";
+  await writeFile(path.join(repo, gitPath), "literal filename\n");
+  const outputDir = path.join(os.tmpdir(), "reviewbundle-backslash-dot-test-" + Date.now());
+
+  const result = await createBundle({
+    repoPath: repo,
+    outputDir,
+    mode: "all",
+    base: "main",
+    json: false,
+    check: false,
+    allowSecretPaths: false,
+    maxFileBytes: 1024 * 1024,
+    force: false
+  });
+
+  assert.equal(result.manifest?.files[0]?.path, gitPath);
+  assert.equal(result.manifest?.files[0]?.snapshot, "changed-files/..\\secret.txt");
+  assert.equal(await readFile(path.join(outputDir, "changed-files", gitPath), "utf8"), "literal filename\n");
+});
+
 test("resolveInside normalizes root spellings before checking containment", async () => {
   const { resolveInside } = await import("../src/path-utils.js");
   const root = path.join(os.tmpdir(), "reviewbundle-root");
