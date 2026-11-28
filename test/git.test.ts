@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 
@@ -55,4 +55,17 @@ test("collectGitSnapshot preserves literal backslashes in POSIX paths", { skip: 
   assert.deepEqual(snapshot.files.map((file) => file.path), [trackedPath, untrackedPath]);
   assert.match(snapshot.diff, /tracked\\\\name\.txt/);
   assert.match(snapshot.diff, /untracked\\\\name\.txt/);
+});
+
+test("collectGitSnapshot excludes only the literal-backslash path on POSIX", { skip: process.platform === "win32" }, async () => {
+  const repo = await makeFixtureRepo();
+  const excludedPath = "excluded\\name.txt";
+  const neighboringPath = "excluded-name.txt";
+  await writeFile(path.join(repo, excludedPath), "exclude me\n");
+  await writeFile(path.join(repo, neighboringPath), "keep me\n");
+
+  const snapshot = await collectGitSnapshot(repo, "all", "main", path.join(repo, excludedPath));
+  assert.deepEqual(snapshot.files.map((file) => file.path), [neighboringPath]);
+  assert.doesNotMatch(snapshot.diff, /exclude me/);
+  assert.match(snapshot.diff, /keep me/);
 });
