@@ -56,8 +56,8 @@ function exclusionPathspec(root: string, excludedPath?: string): string[] {
   if (relativePath === ".." || relativePath.startsWith(".." + path.sep) || path.isAbsolute(relativePath)) {
     throw new ReviewBundleError("Excluded path must be inside the repository root");
   }
-  const relative = relativePath.replace(/\\/g, "/");
-  return ["--", ".", `:(exclude)${relative}`, `:(exclude)${relative}/**`];
+  const relative = process.platform === "win32" ? relativePath.replace(/\\/g, "/") : relativePath;
+  return ["--", ".", `:(exclude,literal)${relative}`, `:(exclude,glob)${relative}/**`];
 }
 
 export async function readIndexFile(root: string, filePath: string): Promise<Buffer | undefined> {
